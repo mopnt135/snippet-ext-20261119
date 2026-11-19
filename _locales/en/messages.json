@@ -1,0 +1,14 @@
+{
+  "appName": {
+    "message": "Juntgraphy",
+    "description": "Extension name (English)"
+  },
+  "appDesc": {
+    "message": "Save images from any web page with a right-click and add notes.",
+    "description": "Extension description"
+  },
+  "menuSave": {
+    "message": "Save to Juntgraphy",
+    "description": "Image right-click menu label"
+  }
+}

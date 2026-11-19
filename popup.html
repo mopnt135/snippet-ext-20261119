@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>준트그래피 · Juntgraphy</title>
+  <style>
+    /* 기본 색상: 흰색 · 검정색 · 주황색 · 초록색 */
+    :root {
+      --white: #ffffff;
+      --black: #111111;
+      --orange: #ff7a00;
+      --green: #1f9d55;
+      --line: rgba(17, 17, 17, 0.12);   /* 검정 옅게 - 구분선 */
+      --muted: rgba(17, 17, 17, 0.5);   /* 검정 옅게 - 보조 글자 */
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 360px;
+      max-height: 560px;
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
+      font-size: 13px;
+      color: var(--black);
+      background: var(--white);
+    }
+
+    /* 제목 + 검색창: 목록을 내려도 위에 고정 */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: var(--white);
+      border-bottom: 2px solid var(--orange);
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px 10px;
+    }
+
+    .search-row { padding: 0 16px 12px; }
+    .search-row[hidden] { display: none; }
+    #search {
+      width: 100%;
+      padding: 7px 10px;
+      font: inherit;
+      color: var(--black);
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+    #search:focus { outline: none; border-color: var(--orange); }
+    #search::placeholder { color: var(--muted); }
+
+    /* 정리 안내창 */
+    .notice {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin: 12px 16px 0;
+      padding: 10px 12px;
+      border: 1px solid var(--orange);
+      border-radius: 8px;
+      background: var(--white);
+    }
+    .notice[hidden] { display: none; }
+    .notice-body { flex: 1; min-width: 0; line-height: 1.5; }
+    .notice-body strong { display: block; color: var(--orange); font-size: 13px; margin-bottom: 2px; }
+    .notice-body p { font-size: 12px; color: var(--black); }
+    #notice-close {
+      flex-shrink: 0;
+      border: none;
+      background: none;
+      color: var(--muted);
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 2px 4px;
+    }
+    #notice-close:hover { color: var(--orange); }
+
+    #no-result { padding: 36px 24px; text-align: center; color: var(--muted); }
+
+    /* 페이지 이동 (5개씩, 최대 6페이지) */
+    .pager {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      padding: 12px 16px 14px;
+    }
+    .pager[hidden] { display: none; }
+    .pager button {
+      min-width: 28px;
+      height: 28px;
+      padding: 0 6px;
+      font: inherit;
+      font-size: 12px;
+      color: var(--black);
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .pager button:hover:not(:disabled):not(.current) { border-color: var(--orange); color: var(--orange); }
+    .pager button.current { background: var(--orange); border-color: var(--orange); color: var(--white); font-weight: 700; cursor: default; }
+    .pager button:disabled { color: var(--line); cursor: default; }
+
+    header h1 { font-size: 15px; font-weight: 700; display: flex; align-items: baseline; gap: 6px; }
+
+    .en-name { font-size: 12px; font-weight: 600; color: var(--orange); }
+
+    /* 상단 버전 표시 */
+    #version {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 0 5px;
+    }
+
+    /* 하단 브랜드 · 문의 */
+    footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px 12px;
+      border-top: 1px solid var(--line);
+      font-size: 11px;
+      color: var(--muted);
+    }
+    footer .brand { font-weight: 700; color: var(--black); }
+    footer .brand::before { content: "● "; color: var(--orange); }
+    #contact { color: var(--muted); text-decoration: none; }
+    #contact:hover { color: var(--orange); text-decoration: underline; }
+
+    #count {
+      min-width: 24px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--white);
+      background: var(--orange);
+      border-radius: 999px;
+      padding: 2px 8px;
+    }
+
+    #list { list-style: none; }
+
+    .card {
+      display: flex;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .thumb {
+      flex-shrink: 0;
+      width: 72px;
+      height: 72px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      cursor: pointer;
+    }
+
+    .body {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .source {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--black);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .source:hover { color: var(--orange); }
+
+    .date { flex-shrink: 0; font-size: 11px; color: var(--muted); }
+
+    /* 이미지 주소(URL) */
+    .image-url {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: Consolas, "D2Coding", monospace;
+      font-size: 11px;
+      color: var(--muted);
+      text-decoration: none;
+    }
+    a.image-url[href]:hover { color: var(--orange); text-decoration: underline; }
+
+    .url-row { display: flex; align-items: center; gap: 6px; min-width: 0; }
+    .url-row .image-url { flex: 1; min-width: 0; }
+    .copy {
+      flex-shrink: 0;
+      border: 1px solid var(--line);
+      background: var(--white);
+      color: var(--black);
+      font: inherit;
+      font-size: 11px;
+      padding: 1px 8px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .copy:hover { border-color: var(--orange); color: var(--orange); }
+    .copy.done { border-color: var(--green); color: var(--green); font-weight: 700; }
+    .copy.fail { border-color: var(--orange); color: var(--orange); }
+
+    .memo {
+      width: 100%;
+      min-height: 44px;
+      resize: vertical;
+      padding: 6px 8px;
+      font: inherit;
+      color: var(--black);
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+    .memo:focus { outline: none; border-color: var(--orange); }
+    .memo::placeholder { color: var(--muted); }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .status {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--green);
+      opacity: 0;
+      transition: opacity .2s;
+    }
+    .status.show { opacity: 1; }
+
+    .delete {
+      border: none;
+      background: none;
+      color: var(--muted);
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 2px 4px;
+    }
+    .delete:hover { color: var(--orange); }
+
+    /* 카드 안 삭제 확인 */
+    .confirm { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+    .confirm[hidden] { display: none; }
+    .confirm button { font: inherit; font-size: 12px; cursor: pointer; border-radius: 6px; }
+    .confirm .yes {
+      border: none;
+      background: var(--orange);
+      color: var(--white);
+      font-weight: 700;
+      padding: 3px 10px;
+    }
+    .confirm .no {
+      border: 1px solid var(--line);
+      background: var(--white);
+      color: var(--black);
+      padding: 2px 9px;
+    }
+    .confirm .no:hover { border-color: var(--orange); }
+
+    #empty {
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    #empty strong {
+      display: block;
+      font-size: 14px;
+      color: var(--black);
+      margin-bottom: 4px;
+    }
+    #empty em { font-style: normal; color: var(--orange); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <header>
+      <h1>준트그래피 <span class="en-name">Juntgraphy</span> <span id="version" title="버전">v0.1</span></h1>
+      <span id="count" title="저장한 개수 / 최대 개수">0/30</span>
+    </header>
+    <div class="search-row" id="search-row" hidden>
+      <input id="search" type="search" placeholder="메모, 페이지 제목, 주소로 검색" aria-label="저장한 이미지 검색" />
+    </div>
+  </div>
+
+  <div class="notice" id="notice" role="alert" hidden>
+    <div class="notice-body">
+      <strong id="notice-title">이미지 정리가 필요해요</strong>
+      <p id="notice-text"></p>
+    </div>
+    <button id="notice-close" type="button">닫기</button>
+  </div>
+
+  <ul id="list"></ul>
+
+  <nav class="pager" id="pager" aria-label="페이지 이동" hidden></nav>
+
+  <div id="no-result" hidden></div>
+
+  <div id="empty" hidden>
+    <strong>아직 저장한 이미지가 없어요</strong>
+    웹페이지에서 이미지를 마우스 오른쪽 버튼으로 클릭한 뒤<br />
+    <em>‘준트그래피에 저장’</em>을 선택해 보세요.
+  </div>
+
+  <footer>
+    <span class="brand">준토폴리오</span>
+    <a id="contact" href="https://github.com/mopnt135/snippet-ext-20261119/issues" title="GitHub Issues에서 문의하기">문의 · GitHub Issues</a>
+  </footer>
+
+  <template id="card-template">
+    <li class="card">
+      <img class="thumb" alt="저장한 이미지" />
+      <div class="body">
+        <div class="meta">
+          <a class="source" target="_blank"></a>
+          <span class="date"></span>
+        </div>
+        <div class="url-row">
+          <a class="image-url" target="_blank"></a>
+          <button class="copy" type="button" title="이미지 주소 복사">복사</button>
+        </div>
+        <textarea class="memo" placeholder="메모를 입력하세요"></textarea>
+        <div class="actions">
+          <span class="status">✓ 저장됨</span>
+          <button class="delete" type="button">삭제</button>
+          <span class="confirm" hidden>
+            삭제할까요?
+            <button class="yes" type="button">삭제</button>
+            <button class="no" type="button">취소</button>
+          </span>
+        </div>
+      </div>
+    </li>
+  </template>
+
+  <script src="popup.js"></script>
+</body>
+</html>

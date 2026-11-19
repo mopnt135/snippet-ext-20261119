@@ -1,0 +1,14 @@
+{
+  "appName": {
+    "message": "준트그래피",
+    "description": "확장 프로그램 이름 (한글)"
+  },
+  "appDesc": {
+    "message": "웹페이지의 이미지를 우클릭으로 모아 두고 메모를 남기는 확장 프로그램",
+    "description": "확장 프로그램 설명"
+  },
+  "menuSave": {
+    "message": "준트그래피에 저장",
+    "description": "이미지 우클릭 메뉴 문구"
+  }
+}
